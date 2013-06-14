@@ -11,7 +11,6 @@ import com.wegas.core.Helper;
 import java.util.Properties;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.jcr.RepositoryException;
@@ -51,7 +50,7 @@ public class JackrabbitConnector {
         //this.runGC();
     }
 
-    @Schedule(minute = "0", hour = "3")
+//    @Schedule(minute = "0", hour = "3")
     private void runGC() {
         try {
             logger.info("Running Jackrabbit GarbageCollector");

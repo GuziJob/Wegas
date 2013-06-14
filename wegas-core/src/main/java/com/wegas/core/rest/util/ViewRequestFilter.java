@@ -7,14 +7,19 @@
  */
 package com.wegas.core.rest.util;
 
-import com.sun.jersey.spi.container.ContainerRequest;
-import com.sun.jersey.spi.container.ContainerRequestFilter;
-import com.sun.jersey.spi.container.ContainerResponseFilter;
-import com.sun.jersey.spi.container.ResourceFilter;
+//import com.sun.jersey.spi.container.ContainerRequest;
+//import com.sun.jersey.spi.container.ContainerRequestFilter;
+//import com.sun.jersey.spi.container.ContainerResponseFilter;
+//import com.sun.jersey.spi.container.ResourceFilter;
 import com.wegas.core.ejb.RequestFacade;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseFilter;
+import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +33,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Francois-Xavier Aeberhard <fx@red-agent.com>
  */
-public class ViewRequestFilter implements ContainerRequestFilter, ResourceFilter {
+public class ViewRequestFilter implements ContainerRequestFilter/*, ResourceFilter*/ {
 
     private final static Logger logger = LoggerFactory.getLogger(ViewRequestFilter.class);
 
@@ -38,113 +43,119 @@ public class ViewRequestFilter implements ContainerRequestFilter, ResourceFilter
      * @param cr
      * @return
      */
+//    @Override
+//    public ContainerRequest filter(ContainerRequest cr) {
+//        RequestFacade rmf = RequestFacade.lookup();
+//
+//        // Handle language parameter
+//        if (cr.getHeaderValue("lang") != null
+//                && !cr.getHeaderValue("lang").isEmpty()) {
+//            rmf.setLocale(new Locale(cr.getHeaderValue("lang")));
+//        } else if (cr.getHeaderValue("Accept-Language") != null && !cr.getHeaderValue("Accept-Language").isEmpty()) {
+//            rmf.setLocale(new Locale(cr.getHeaderValue("Accept-Language")));
+//        } else {
+//            rmf.setLocale(Locale.getDefault());
+//        }
+//
+//
+//        String newUri = cr.getRequestUri().toString();
+//        String firstPathSeg = cr.getPathSegments().get(0).getPath();
+//
+//        switch (firstPathSeg) {
+//
+//            case "Private":
+//            case "EditorPrivate":
+//                String id = cr.getPathSegments().get(1).getPath();
+//                rmf.setView(this.stringToView(firstPathSeg));
+//                rmf.setPlayer(Long.valueOf(id));
+//                newUri = newUri.replace(firstPathSeg + "/" + id + "/", "");
+//                break;
+//
+//            case "Index":
+//            case "Public":
+//            case "Extended":
+//            case "Export":
+//            case "Editor":
+//            case "EditorExtended":
+//                rmf.setView(this.stringToView(firstPathSeg));
+//                newUri = newUri.replace(firstPathSeg + "/", "");
+//                break;
+//
+//            default:
+//                rmf.setView(Views.Public.class);
+//                break;
+//        }
+//
+//        try {
+//            cr.setUris(cr.getBaseUri(), new URI(newUri));
+//        } catch (URISyntaxException ex) {
+//            logger.error(null, ex);
+//        }
+//
+//        if (cr.getQueryParameters().get("view") != null) {                      // If the view is given through a query parameter
+//            rmf.setView(this.stringToView(cr.getQueryParameters().get("view").get(0)));
+//        }
+//
+//        return cr;
+//    }
+//
+//    /**
+//     *
+//     * @param str
+//     * @return
+//     */
+//    public Class stringToView(String str) {
+//        switch (str) {
+//            case "Index":
+//                return Views.Index.class;
+//
+//            case "Extended":
+//                return Views.Extended.class;
+//
+//            case "Private":
+//                return Views.Private.class;
+//
+//
+//            case "Export":
+//                return Views.Export.class;
+//
+//            case "Editor":
+//                return Views.Editor.class;
+//
+//            case "EditorPrivate":
+//                return Views.EditorPrivate.class;
+//
+//            case "EditorExtended":
+//                return Views.EditorExtended.class;
+//
+//            case "Public":
+//            default:
+//                return Views.Public.class;
+//        }
+//
+//    }
+//
+//    /**
+//     *
+//     * @return
+//     */
+//    @Override
+//    public ContainerRequestFilter getRequestFilter() {
+//        return this;
+//    }
+//
+//    /**
+//     *
+//     * @return
+//     */
+//    @Override
+//    public ContainerResponseFilter getResponseFilter() {
+//        return null;
+//    }
+
     @Override
-    public ContainerRequest filter(ContainerRequest cr) {
-        RequestFacade rmf = RequestFacade.lookup();
-
-        // Handle language parameter
-        if (cr.getHeaderValue("lang") != null
-                && !cr.getHeaderValue("lang").isEmpty()) {
-            rmf.setLocale(new Locale(cr.getHeaderValue("lang")));
-        } else if (cr.getHeaderValue("Accept-Language") != null && !cr.getHeaderValue("Accept-Language").isEmpty()) {
-            rmf.setLocale(new Locale(cr.getHeaderValue("Accept-Language")));
-        } else {
-            rmf.setLocale(Locale.getDefault());
-        }
-
-
-        String newUri = cr.getRequestUri().toString();
-        String firstPathSeg = cr.getPathSegments().get(0).getPath();
-
-        switch (firstPathSeg) {
-
-            case "Private":
-            case "EditorPrivate":
-                String id = cr.getPathSegments().get(1).getPath();
-                rmf.setView(this.stringToView(firstPathSeg));
-                rmf.setPlayer(Long.valueOf(id));
-                newUri = newUri.replace(firstPathSeg + "/" + id + "/", "");
-                break;
-
-            case "Index":
-            case "Public":
-            case "Extended":
-            case "Export":
-            case "Editor":
-            case "EditorExtended":
-                rmf.setView(this.stringToView(firstPathSeg));
-                newUri = newUri.replace(firstPathSeg + "/", "");
-                break;
-
-            default:
-                rmf.setView(Views.Public.class);
-                break;
-        }
-
-        try {
-            cr.setUris(cr.getBaseUri(), new URI(newUri));
-        } catch (URISyntaxException ex) {
-            logger.error(null, ex);
-        }
-
-        if (cr.getQueryParameters().get("view") != null) {                      // If the view is given through a query parameter
-            rmf.setView(this.stringToView(cr.getQueryParameters().get("view").get(0)));
-        }
-
-        return cr;
-    }
-
-    /**
-     *
-     * @param str
-     * @return
-     */
-    public Class stringToView(String str) {
-        switch (str) {
-            case "Index":
-                return Views.Index.class;
-
-            case "Extended":
-                return Views.Extended.class;
-
-            case "Private":
-                return Views.Private.class;
-
-
-            case "Export":
-                return Views.Export.class;
-
-            case "Editor":
-                return Views.Editor.class;
-
-            case "EditorPrivate":
-                return Views.EditorPrivate.class;
-
-            case "EditorExtended":
-                return Views.EditorExtended.class;
-
-            case "Public":
-            default:
-                return Views.Public.class;
-        }
-
-    }
-
-    /**
-     *
-     * @return
-     */
-    @Override
-    public ContainerRequestFilter getRequestFilter() {
-        return this;
-    }
-
-    /**
-     *
-     * @return
-     */
-    @Override
-    public ContainerResponseFilter getResponseFilter() {
-        return null;
+    public void filter(ContainerRequestContext requestContext) throws IOException {
+//        requestContext.
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -17,6 +17,8 @@ import com.wegas.core.persistence.game.Team;
 import com.wegas.core.security.ejb.UserFacade;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
@@ -71,41 +73,48 @@ public class SingleLobbyController implements Serializable {
      * @throws IOException if the target we dispatch to do not exist
      */
     @PostConstruct
-    public void init() throws IOException {
+    public void init() {
         final ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
 
-        if (token != null) {
-            currentGame = gameFacade.findByToken(token);
-            if (currentGame != null) {
-                try {
-                    playerFacade.findCurrentPlayer(currentGame);
-                    externalContext.dispatch(
-                            "/wegas-app/view/play.xhtml?gameId=" + currentGame.getId());// display game page
-                } catch (PersistenceException e) {
-                    // Nothing to do. stay on current page so player will choose his team
+        try {
+            if (token != null) {
+                currentGame = gameFacade.findByToken(token);
+                if (currentGame != null) {
+                    try {
+                        playerFacade.findCurrentPlayer(currentGame);
+                        externalContext.dispatch(
+                                "/wegas-app/view/play.xhtml?gameId=" + currentGame.getId());// display game page
+                    } catch (PersistenceException e) {
+                        // Nothing to do. stay on current page so player will choose his team
+                    } catch (IOException ex) {
+                        Logger.getLogger(SingleLobbyController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                } else {
+                    final Team currentTeam = teamFacade.findByToken(token);
+                    if (currentTeam != null) {
+                        try {
+                            playerFacade.findCurrentPlayer(currentTeam.getGame());
+                        } catch (NoResultException etp) {                           // Player has not joined yet
+                            if (SecurityUtils.getSubject().isPermitted("Game:Token:g" + currentTeam.getGame().getId())) {
+                                teamFacade.joinTeam(currentTeam, userFacade.getCurrentUser()); // so we join him
+                            } else {
+                                externalContext.dispatch("/wegas-app/view/error/accessdenied.xhtml"); // not allowed
+                            }
+                        }
+                        externalContext.dispatch(
+                                "/wegas-app/view/play.xhtml?gameId=" + currentTeam.getGame().getId());// display game page
+
+                    } else {
+                        externalContext.dispatch("/wegas-app/view/error/accessdenied.xhtml"); // no game
+                    }
                 }
 
             } else {
-                final Team currentTeam = teamFacade.findByToken(token);
-                if (currentTeam != null) {
-                    try {
-                        playerFacade.findCurrentPlayer(currentTeam.getGame());
-                    } catch (NoResultException etp) {                           // Player has not joined yet
-                        if (SecurityUtils.getSubject().isPermitted("Game:Token:g" + currentTeam.getGame().getId())) {
-                            teamFacade.joinTeam(currentTeam, userFacade.getCurrentUser()); // so we join him
-                        } else {
-                            externalContext.dispatch("/wegas-app/view/error/accessdenied.xhtml"); // not allowed
-                        }
-                    }
-                    externalContext.dispatch(
-                            "/wegas-app/view/play.xhtml?gameId=" + currentTeam.getGame().getId());// display game page
-                } else {
-                    externalContext.dispatch("/wegas-app/view/error/accessdenied.xhtml"); // no game
-                }
+                externalContext.dispatch("/wegas-app/view/error/accessdenied.xhtml"); // no game
             }
-
-        } else {
-            externalContext.dispatch("/wegas-app/view/error/accessdenied.xhtml"); // no game
+        } catch (IOException ex) {
+            Logger.getLogger(SingleLobbyController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }

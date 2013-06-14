@@ -11,6 +11,8 @@ import com.wegas.core.ejb.PlayerFacade;
 import com.wegas.core.exception.NoResultException;
 import com.wegas.core.security.ejb.UserFacade;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
@@ -58,7 +60,7 @@ public class GameController extends AbstractGameController {
      * @throws IOException if the target we dispatch to do not exist
      */
     @PostConstruct
-    public void init() throws IOException {
+    public void init() {
         final ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
 
         if (this.playerId != null) {                                            // If a playerId is provided, we use it
@@ -80,7 +82,11 @@ public class GameController extends AbstractGameController {
 
         } else if (!userFacade.matchCurrentUser(currentPlayer.getId())
                 && !SecurityUtils.getSubject().isPermitted("Game:View:g" + currentPlayer.getGame().getId())) {
-            externalContext.dispatch("/wegas-app/view/error/accessdenied.xhtml");
+            try {
+                externalContext.dispatch("/wegas-app/view/error/accessdenied.xhtml");
+            } catch (IOException ex) {
+                Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 

@@ -50,7 +50,7 @@ public class RequestController implements Serializable {
      * @throws IOException if the target we dispatch to do not exist
      */
     @PostConstruct
-    public void init() throws IOException {
+    public void init() {
         if (this.lang != null) { // If a language parameter is provided, it overrides the Accept-Language header
             FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale(this.lang));
         }

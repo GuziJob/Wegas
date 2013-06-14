@@ -7,8 +7,8 @@
  */
 package com.wegas.core.rest;
 
-import com.sun.jersey.multipart.FormDataBodyPart;
-import com.sun.jersey.multipart.FormDataParam;
+//import com.sun.jersey.multipart.FormDataBodyPart;
+//import com.sun.jersey.multipart.FormDataParam;
 import com.wegas.core.ejb.GameModelFacade;
 import com.wegas.core.exception.WegasException;
 import com.wegas.core.jcr.content.*;
@@ -66,89 +66,89 @@ public class FileController {
      * @throws RepositoryException
      * @throws WegasException
      */
-    @POST
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("upload{directory : .*?}")
-    public Response upload(@PathParam("gameModelId") Long gameModelId,
-            @FormDataParam("name") String name,
-            @FormDataParam("note") String note,
-            @FormDataParam("note") String description,
-            @PathParam("directory") String path,
-            @FormDataParam("file") InputStream file,
-            @FormDataParam("file") FormDataBodyPart details) throws RepositoryException, WegasException {
-
-        SecurityUtils.getSubject().checkPermission("GameModel:Edit:gm" + gameModelId);
-
-        logger.debug("File name: {}", details.getContentDisposition().getFileName());
-        if (name == null) {
-            name = details.getContentDisposition().getFileName();
-        }
-        AbstractContentDescriptor detachedFile = null;
-        try {
-            Pattern pattern = Pattern.compile(FILENAME_REGEXP);
-            Matcher matcher = pattern.matcher(name);
-            if (name.equals("") || !matcher.matches()) {
-                throw new WegasException(name + " is not a valid filename.");
-            }
-            ContentConnector connector = ContentConnectorFactory.getContentConnectorFromGameModel(gameModelId);
-
-            AbstractContentDescriptor dir = DescriptorFactory.getDescriptor(path, connector);
-            if (dir.exist()) {                                                  //directory has to exist
-                if (details.getContentDisposition().getFileName() == null || details.getContentDisposition().getFileName().equals("")) {       //Assuming an empty filename means a directory
-                    detachedFile = new DirectoryDescriptor(name, path, connector);
-                } else {
-                    logger.debug("File name: {}", details.getContentDisposition().getFileName());
-                    detachedFile = new FileDescriptor(name, path, connector);
-                }
-                if (!detachedFile.exist()) {                                        //Node should not exist
-                    note = note == null ? "" : note;
-                    detachedFile.setNote(note);
-                    detachedFile.setDescription(description);
-                    if (detachedFile instanceof FileDescriptor) {
-                        //TODO : check allowed mime-types
-                        try {
-                            ((FileDescriptor) detachedFile).setBase64Data(file, details.getMediaType().toString());
-                            logger.info(details.getFormDataContentDisposition().getFileName() + "(" + details.getMediaType() + ") uploaded as \"" + name + "\"");
-                        } catch (IOException ex) {
-                            logger.error("Error reading uploaded file :", ex);
-                            connector.save();
-                        }
-                    } else {
-                        detachedFile.sync();
-                        logger.info("Directory {} created at {}", detachedFile.getName(), detachedFile.getPath());
-                    }
-                } else {
-                    throw new WegasException(detachedFile.getPath() + "/" + name + " already exists");
-                }
-            } else {
-                logger.debug("Parent Directory does not exist");
-            }
-            connector.save();
-        } catch (final WegasException ex) {
-            Response.StatusType status = new Response.StatusType() {
-
-                @Override
-                public int getStatusCode() {
-                    return 430;
-                }
-
-                @Override
-                public Response.Status.Family getFamily() {
-                    return Response.Status.Family.CLIENT_ERROR;
-                }
-
-                @Override
-                public String getReasonPhrase() {
-                    return ex.getLocalizedMessage();
-                }
-            };
-
-            return Response.status(status).build();
-        }
-
-        return Response.ok(detachedFile, MediaType.APPLICATION_JSON).build();
-    }
+//    @POST
+//    @Consumes(MediaType.MULTIPART_FORM_DATA)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @Path("upload{directory : .*?}")
+//    public Response upload(@PathParam("gameModelId") Long gameModelId,
+//            @FormDataParam("name") String name,
+//            @FormDataParam("note") String note,
+//            @FormDataParam("note") String description,
+//            @PathParam("directory") String path,
+//            @FormDataParam("file") InputStream file,
+//            @FormDataParam("file") FormDataBodyPart details) throws RepositoryException, WegasException {
+//
+//        SecurityUtils.getSubject().checkPermission("GameModel:Edit:gm" + gameModelId);
+//
+//        logger.debug("File name: {}", details.getContentDisposition().getFileName());
+//        if (name == null) {
+//            name = details.getContentDisposition().getFileName();
+//        }
+//        AbstractContentDescriptor detachedFile = null;
+//        try {
+//            Pattern pattern = Pattern.compile(FILENAME_REGEXP);
+//            Matcher matcher = pattern.matcher(name);
+//            if (name.equals("") || !matcher.matches()) {
+//                throw new WegasException(name + " is not a valid filename.");
+//            }
+//            ContentConnector connector = ContentConnectorFactory.getContentConnectorFromGameModel(gameModelId);
+//
+//            AbstractContentDescriptor dir = DescriptorFactory.getDescriptor(path, connector);
+//            if (dir.exist()) {                                                  //directory has to exist
+//                if (details.getContentDisposition().getFileName() == null || details.getContentDisposition().getFileName().equals("")) {       //Assuming an empty filename means a directory
+//                    detachedFile = new DirectoryDescriptor(name, path, connector);
+//                } else {
+//                    logger.debug("File name: {}", details.getContentDisposition().getFileName());
+//                    detachedFile = new FileDescriptor(name, path, connector);
+//                }
+//                if (!detachedFile.exist()) {                                        //Node should not exist
+//                    note = note == null ? "" : note;
+//                    detachedFile.setNote(note);
+//                    detachedFile.setDescription(description);
+//                    if (detachedFile instanceof FileDescriptor) {
+//                        //TODO : check allowed mime-types
+////                        try {
+//                            ((FileDescriptor) detachedFile).setBase64Data(file, details.getMediaType().toString());
+//                            logger.info(details.getFormDataContentDisposition().getFileName() + "(" + details.getMediaType() + ") uploaded as \"" + name + "\"");
+////                        } catch (IOException ex) {
+////                            logger.error("Error reading uploaded file :", ex);
+////                            connector.save();
+////                        }
+//                    } else {
+//                        detachedFile.sync();
+//                        logger.info("Directory {} created at {}", detachedFile.getName(), detachedFile.getPath());
+//                    }
+//                } else {
+//                    throw new WegasException(detachedFile.getPath() + "/" + name + " already exists");
+//                }
+//            } else {
+//                logger.debug("Parent Directory does not exist");
+//            }
+//            connector.save();
+//        } catch (final WegasException ex) {
+//            Response.StatusType status = new Response.StatusType() {
+//
+//                @Override
+//                public int getStatusCode() {
+//                    return 430;
+//                }
+//
+//                @Override
+//                public Response.Status.Family getFamily() {
+//                    return Response.Status.Family.CLIENT_ERROR;
+//                }
+//
+//                @Override
+//                public String getReasonPhrase() {
+//                    return ex.getLocalizedMessage();
+//                }
+//            };
+//
+//            return Response.status(status).build();
+//        }
+//
+//        return Response.ok(detachedFile, MediaType.APPLICATION_JSON).build();
+//    }
 
     /**
      *
@@ -348,39 +348,39 @@ public class FileController {
      * @throws TransformerException
      * @throws WegasException
      */
-    @POST
-    @Path("importXML")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<AbstractContentDescriptor> importXML(@PathParam("gameModelId") Long gameModelId,
-            @FormDataParam("file") InputStream file,
-            @FormDataParam("file") FormDataBodyPart details)
-            throws RepositoryException, IOException, SAXException,
-            ParserConfigurationException, TransformerException, WegasException {
-
-        SecurityUtils.getSubject().checkPermission("GameModel:Edit:gm" + gameModelId);
-
-        try {
-            final ContentConnector connector = ContentConnectorFactory.getContentConnectorFromGameModel(gameModelId);
-            switch (details.getMediaType().getSubtype()) {
-                case "x-gzip":
-                    try (GZIPInputStream in = new GZIPInputStream(file)) {
-                        connector.importXML(in);
-                    }
-                    break;
-                case "xml":
-                    connector.importXML(file);
-                    break;
-                default:
-                    throw new WegasException("Uploaded file mimetype does not match requirements [XML or Gunzip], found:"
-                            + details.getMediaType().toString());
-            }
-            connector.save();
-        } finally {
-            file.close();
-        }
-        return this.listDirectory(gameModelId, "/");
-    }
+//    @POST
+//    @Path("importXML")
+//    @Consumes(MediaType.MULTIPART_FORM_DATA)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public List<AbstractContentDescriptor> importXML(@PathParam("gameModelId") Long gameModelId,
+//            @FormDataParam("file") InputStream file,
+//            @FormDataParam("file") FormDataBodyPart details)
+//            throws RepositoryException, IOException, SAXException,
+//            ParserConfigurationException, TransformerException, WegasException {
+//
+//        SecurityUtils.getSubject().checkPermission("GameModel:Edit:gm" + gameModelId);
+//
+//        try {
+//            final ContentConnector connector = ContentConnectorFactory.getContentConnectorFromGameModel(gameModelId);
+//            switch (details.getMediaType().getSubtype()) {
+//                case "x-gzip":
+//                    try (GZIPInputStream in = new GZIPInputStream(file)) {
+//                        connector.importXML(in);
+//                    }
+//                    break;
+//                case "xml":
+//                    connector.importXML(file);
+//                    break;
+//                default:
+//                    throw new WegasException("Uploaded file mimetype does not match requirements [XML or Gunzip], found:"
+//                            + details.getMediaType().toString());
+//            }
+//            connector.save();
+//        } finally {
+//            file.close();
+//        }
+//        return this.listDirectory(gameModelId, "/");
+//    }
 
     /**
      *

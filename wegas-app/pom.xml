@@ -112,9 +112,9 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
-        
+
         <!-- Jersey -->
-        <dependency>
+<!--        <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-json</artifactId>
             <scope>provided</scope>
@@ -123,7 +123,7 @@
             <artifactId>jersey-multipart</artifactId>
             <groupId>com.sun.jersey.contribs</groupId>
             <scope>provided</scope>
-        </dependency>
+        </dependency>-->
 
         <!-- Apache Shiro Dependencies -->
         <dependency>
@@ -150,7 +150,7 @@
 
         <dependency>
             <groupId>org.glassfish.main.extras</groupId>
-            <artifactId>glassfish-embedded-all</artifactId>
+            <artifactId>glassfish-embedded-web</artifactId>
             <scope>provided</scope>
         </dependency>
 

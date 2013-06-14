@@ -12,10 +12,11 @@ import com.wegas.core.ejb.GameModelFacade;
 import com.wegas.core.ejb.PlayerFacade;
 import com.wegas.core.ejb.TeamFacade;
 import com.wegas.core.exception.NoResultException;
-import com.wegas.core.persistence.game.GameModel;
 import com.wegas.core.security.ejb.UserFacade;
 import com.wegas.core.security.util.SecurityHelper;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
@@ -24,7 +25,6 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
-import org.apache.shiro.SecurityUtils;
 
 /**
  *
@@ -67,10 +67,9 @@ public class EditorGameController extends AbstractGameController {
 
     /**
      *
-     * @throws IOException if the target we dispatch to do not exist
      */
     @PostConstruct
-    public void init() throws IOException {
+    public void init() {
         final ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
 
         if (this.playerId != null) {                                            // If a playerId is provided, we use it
@@ -109,14 +108,19 @@ public class EditorGameController extends AbstractGameController {
                 }
             }
         }
-        if (currentPlayer == null) {                                            // If no player could be found, we redirect to an error page
-            externalContext.dispatch("/wegas-app/view/error/error.xhtml");
-        } else {
-            if (!SecurityHelper.isPermitted(currentPlayer.getGame(), "Edit")) {
-                externalContext.dispatch("/wegas-app/view/error/accessdenied.xhtml");
-            }
-        }
+        try {
+            if (currentPlayer == null) {
+                // If no player could be found, we redirect to an error page
+                externalContext.dispatch("/wegas-app/view/error/error.xhtml");
 
+            } else {
+                if (!SecurityHelper.isPermitted(currentPlayer.getGame(), "Edit")) {
+                    externalContext.dispatch("/wegas-app/view/error/accessdenied.xhtml");
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(EditorGameController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
